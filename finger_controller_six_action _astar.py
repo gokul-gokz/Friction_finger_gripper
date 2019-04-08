@@ -377,7 +377,7 @@ def high_level_plan(start, goal):
 
 start = node(0,5.0,5.0,0,None,None)
 
-goal = node(0,3.0,4.0,0,None,None)
+goal = node(0,5.0,4.0,0,None,None)
 high_level_plan(start, goal)
 
 #Robot params
