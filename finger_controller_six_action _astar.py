@@ -3,6 +3,8 @@ import math
 
 import Queue
 
+import matplotlib.pyplot as plt
+
 #from mpmath import *
 from sympy import *
 import numpy as np
@@ -21,6 +23,7 @@ TH1_MAX= 2.485 #142.5 degrees
 TH2_MAX= 0.65 #37.5
 FINGER_WIDTH=1
 K=0.1
+NUMBER_OF_NODES_EXPANDED=0
 
 def angle_conversion(angle, flag):
     if (flag == 1):
@@ -190,48 +193,41 @@ class node:
             self.position_l = pose_l
 
     def update(self,g,goal_l,goal_r):
-        self.g = g + 0.1;
-        # print"current_action=", self.action
-        # print"current_position_l=",self.position_l
-        # print"current_position_r",self.position_r
-        # print"goal_position_l=", goal_l
-        # print"goal_position_r", goal_r
-        #goal_l=goal_l+0.1
-        #goal_r=goal_r+0.1
-        #self.h = math.sqrt((self.position_l - goal_l) ** 2 + (self.position_r - goal_r) ** 2)
-        #self.h = (self.position_l - goal_l)  + (self.position_r - goal_r)
-        if goal_l==self.position_l:
+        self.g = g + 10;
+
+        if (isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0)):
             if self.action=="l_plus":
-                 print "h1"
-                 self.h=-10000000
+                # print "h1"
+                 self.h=-10000
             if self.action=="l_minus":
-                 print "h2"
-                 self.h=-10000000
-        elif goal_r==self.position_r:
+               #  print "h2"
+                 self.h=-10000
+        elif (isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0)):
             if self.action=="r_plus":
-                 print "h3"
-                 self.h=-10000000
+               #  print "h3"
+                 self.h=-10000
             if self.action=="r_minus":
-                 print "h4"
-                 self.h=-10000000
+                # print "h4"
+                 self.h=-10000
         if(1):
-            if self.action=="l_plus" and self.position_l != goal_l :
-                 print "h5"
-                 self.h=((self.position_l - goal_l))*100
-            if self.action=="l_minus" and self.position_l != goal_l:
-                 print "h6"
-                 self.h=((goal_l-self.position_l))*100
-            if self.action=="r_plus" and self.position_r != goal_r:
-                 self.h=((self.position_r - goal_r))*100
-                 print "h7"
+            if self.action=="l_plus" and (not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0))) :
+                 #print "h5"
+                 self.h=(1/(self.position_l - goal_l))
+            if self.action=="l_minus" and not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0)):
+                 #print "h6"
+                 self.h=(1/(goal_l-self.position_l))
+            if self.action=="r_plus" and (not(isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0))):
+                 self.h=(1/(self.position_r - goal_r))
+                 #print "h7"
                  #self.h = 100
-            if self.action=="r_minus" and self.position_r != goal_r:
-                 self.h=((goal_r-self.position_r))*100
-                 print "h8"
+            if self.action=="r_minus" and (not(isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0))):
+                 self.h=(1/(goal_r-self.position_r))
+                 #print "h8"
                  #self.h=0
 
         self.f = self.g+self.h
-        print "h",self.h
+        print self.action,".h=",self.h
+        print "actual_cost=",self.f
 
 
 
@@ -239,13 +235,13 @@ class node:
         neighbours = []
         actions=("l_plus","l_minus","r_plus","r_minus")
 
-        if (limit_check(self.position_l + SLIDING_RESOLUTION,self.position_r ,actions[0])) and COST_T>0:
+        if (limit_check(self.position_l + SLIDING_RESOLUTION,self.position_r ,actions[0])):
             action="l_plus"
             l_plus=node(SLIDING_RESOLUTION,self.position_l,self.position_r,self.orientation,self,action)
             neighbours.append(l_plus)
 
 
-        if (limit_check(self.position_l - SLIDING_RESOLUTION,self.position_r,actions[1])) and COST_T > 0:
+        if (limit_check(self.position_l - SLIDING_RESOLUTION,self.position_r,actions[1])):
 
 
             action="l_minus"
@@ -253,7 +249,7 @@ class node:
 
             neighbours.append(l_minus)
 
-        if (limit_check(self.position_l,self.position_r - SLIDING_RESOLUTION,actions[3])) and COST_T>0:
+        if (limit_check(self.position_l,self.position_r - SLIDING_RESOLUTION,actions[3])):
 
 
             action = "r_minus"
@@ -261,11 +257,13 @@ class node:
 
             neighbours.append(r_minus)
 
-        if (limit_check(self.position_l,self.position_r + SLIDING_RESOLUTION,actions[2])) and COST_T > 0:
+        if (limit_check(self.position_l,self.position_r + SLIDING_RESOLUTION,actions[2])):
 
             action = "r_plus"
             r_plus=node(SLIDING_RESOLUTION,self.position_l,self.position_r,self.orientation,self,action)
             neighbours.append(r_plus)
+
+            
 
         # if (self.position + ROTATION_SLIDE_RESOLUTION <= FINGER_END and self.position >= FINGER_START and self.parent != "o_minus" and COST_R>0):
         #     o_plus.position = self.position + ROTATION_SLIDE_RESOLUTION
@@ -284,26 +282,48 @@ class node:
         return neighbours
 
 
-def bfs(start, goal):
+def A_star(start, goal):
+    global NUMBER_OF_NODES_EXPANDED
+    print "Start and Goal state validation"
+    if limit_check(start.position_l, start.position_r, "r_plus") and  limit_check(start.position_l, start.position_r, "l_plus"):
+        print"start_valid"
+    else:
+        print"Invalid startstate"
+        return None
+    if limit_check(goal.position_l, goal.position_r, "r_plus") and  limit_check(goal.position_l, goal.position_r, "l_plus"):
+        print"Goal_valid"
+    else:
+        print"Invalid Goalstate"
+        return None
+
+
     start_time = time.time()
     #queue = [start]
     #cur = queue.pop()
     open_list=Queue.PriorityQueue()
     open_list.put((start.f,start))
     closed_list=[]
-
+    expanded=0
     while(1):
 
         cur = (open_list.get())[1]
         for exp_nodes in closed_list:
-            if (exp_nodes[0] == cur.position_l) and (exp_nodes[1] == cur.position_r):
+            if isclose(exp_nodes[0],cur.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[1],cur.position_r, rel_tol=1e-09, abs_tol=0.0):
+                print "already in closed list"
+                expanded=1
                 continue
+
+        if(expanded):
+            expanded=0
+            continue
+
         print "action=",cur.action
         print "l=",(cur.position_l)
         print "r=",(cur.position_r)
-        print "total_cost=",cur.g
+        print "total_cost=",cur.f
         exp= [cur.position_l,cur.position_r]
         closed_list.append(exp)
+        NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
 
         if ( (isclose(cur.position_l, goal.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(cur.position_r,
                                                                                                      goal.position_r,
@@ -329,7 +349,7 @@ def bfs(start, goal):
                     flag=False
 
             if(flag):
-                nod.update(cur.g,goal.position_l,goal.position_r)
+                nod.update(cur.f,goal.position_l,goal.position_r)
                 open_list.put((nod.f,nod))
 
         #cur = queue.pop(0)
@@ -344,53 +364,20 @@ def backtrace(cur):
     path = []
     while not cur.parent == None:
         path.append(cur.action)
-        print "node=", cur.action, "cost=", cur.f
+        print "node=", cur.action, "cost=", cur.f,"left=",cur.position_l,"right=",cur.position_r
         cur = cur.parent
+    print"Number of nodes expanded=",NUMBER_OF_NODES_EXPANDED
+    print"Length of solution=",len(path)
     print path
     return path
 
 
 def high_level_plan(start, goal):
-    l = bfs(start, goal)
+    l = A_star(start, goal)
 
-    # prev_action = l[0]
-    # count = 0
-    # flag = 0
-    # path = []
-    # final_action = ""
-    # print range(len(l))
-    # for i in range(len(l)):
-    #
-    #     #print i,len(l)-1
-    #     action = l[i]
-    #
-    #     #print action, prev_action
-    #     if action == prev_action:
-    #         count = count + 1
-    #         #print count
-    #         flag = 1
-    #         prev_action = action
-    #         if(i!=(len(l)-1)):
-    #             continue
-    #
-    #     if (action != prev_action and flag == 1) or i == (len(l)-1) or i == 0:
-    #         final_action = prev_action + str(count)
-    #         flag = 0
-    #         path.append(final_action)
-    #         prev_action = action
-    #         count=1
-    #         continue
-    #
-    #     if not flag:
-    #         path.append(action)
-    #         prev_action = action
-    #
-    # print(path)
+start = node(0,5.0,5.0,0,None,None)
 
-
-start = node(0,5,5,0,None,None)
-
-goal = node(0,5.9,6,0,None,None)
+goal = node(0,3.0,4.0,0,None,None)
 high_level_plan(start, goal)
 
 #Robot params
