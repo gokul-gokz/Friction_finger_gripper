@@ -24,6 +24,9 @@ TH2_MAX= 0.65 #37.5
 FINGER_WIDTH=1
 K=0.1
 NUMBER_OF_NODES_EXPANDED=0
+PHI=3.14
+W_S=1000
+R_S=-1000
 
 def angle_conversion(angle, flag):
     if (flag == 1):
@@ -86,23 +89,6 @@ def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
               (diff <= abs_tol))
     return result
 
-def cost_function(CUR_POS,GOAL_POS,CUR_ORI,GOAL_ORI):
-
-    if CUR_POS>GOAL_POS:
-        COST_T=-1
-    elif CUR_POS<GOAL_POS:
-        COST_T =1
-    else:
-        COST_T=0
-
-    if CUR_ORI>GOAL_ORI:
-        COST_R=-1
-    elif CUR_ORI<GOAL_ORI:
-        COST_R=1
-    else:
-        print(CUR_ORI)
-        COST_R=0
-    return COST_T,COST_R
 
 def action_right_equations(variables) :
     (th1,th2) = variables
@@ -132,6 +118,14 @@ def theta_conversion(left_position, right_position, action_name):
         # print "left", left_position, "right", right_position
         #print solution
         return solution
+    elif (action_name=="rotate_clockwise"):
+        solution= np.pi - np.arccos((((right_position-OBJECT_SIZE)**2 + OBJECT_SIZE**2 - PALM_WIDTH**2 - (left_position + OBJECT_SIZE)**2)/(2*PALM_WIDTH*(left_position+OBJECT_SIZE))))
+        return (solution)
+
+    elif (action_name=="rotate_anticlockwise"):
+        solution=np.arccos(((left_position - OBJECT_SIZE)**2 + OBJECT_SIZE**2 - (right_position+OBJECT_SIZE)**2 - PALM_WIDTH**2)/(2*PALM_WIDTH*(right_position + OBJECT_SIZE)))
+
+        return (solution)
 
 
 
@@ -144,21 +138,39 @@ def limit_check(left_pos,right_pos,action):
     left_position=left_pos
     right_position=right_pos
 
-    if(left_position<FINGER_END and left_position>FINGER_START and right_position<FINGER_END and right_position>FINGER_START):
-        sol=theta_conversion(left_position, right_position, action)
+    if(action=="l_plus" or action=="l_minus" or action=="r_plus" or action=="r_minus"):
+        if(left_position<FINGER_END and left_position>FINGER_START and right_position<FINGER_END and right_position>FINGER_START):
+            sol=theta_conversion(left_position, right_position, action)
 
-        th1=sol[0]
-        #print th1
-        th2=sol[1]
-        #print th2
+            th1=sol[0]
+            print th1
+            th2=sol[1]
+            print th2
 
-        if(th1<=TH1_MAX and th2>=TH2_MAX):
-            return True
+            if(th1<=TH1_MAX and th2>=TH2_MAX):
+                return True
+            else:
+                print "range_limit_exceeding for sliding"
+                return False
         else:
-            print "range_limit_exceeding"
-            return False
-    else:
-         return False
+             return False
+
+    elif action=="rotate_clockwise":
+        th1=theta_conversion(left_position, right_position, action)
+
+        if(th1<=TH1_MAX ):
+                return True
+        else:
+                print "range_limit_exceeding for rotate clockwise"
+                return False
+
+    elif action=="rotate_anticlockwise":
+        th2=theta_conversion(left_position, right_position, action)
+        if(th2>=TH2_MAX ):
+                return True
+        else:
+                print "range_limit_exceeding for rotate anticlockwise"
+                return False
 
 
 class node:
@@ -188,11 +200,22 @@ class node:
             self.position_r = pose_r - res
             self.position_l = pose_l
             (self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+        elif(a=="rotate_clockwise"):
+            self.position_r = pose_r -OBJECT_SIZE
+            self.position_l = pose_l +OBJECT_SIZE
+            self.orientation= pose_o+90
+            #(self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+        elif(a=="rotate_anticlockwise"):
+            self.position_r = pose_r + OBJECT_SIZE
+            self.position_l = pose_l - OBJECT_SIZE
+            self.orientation=pose_o-90
+            #(self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
         else:
             self.position_r = pose_r
             self.position_l = pose_l
+            self.orientation= pose_o
 
-    def update(self,g,goal_l,goal_r):
+    def update(self,g,goal_l,goal_r,goal_orientation):
         self.g = g + 10;
 
         if (isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0)):
@@ -209,21 +232,30 @@ class node:
             if self.action=="r_minus":
                 # print "h4"
                  self.h=-10000
+
+        # elif (isclose(self.orientation,goal_orientation, rel_tol=1e-09, abs_tol=0.0)):
+        #     if self.action=="rotate_clockwise":
+        #         self.h=0
+        #     if self.action=="rotate_anticlockwise":
+        #         self.h=0
+
         if(1):
             if self.action=="l_plus" and (not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0))) :
                  #print "h5"
-                 self.h=(1/(self.position_l - goal_l))
+                 self.h=W_S*(1/(self.position_l - goal_l))
             if self.action=="l_minus" and not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0)):
                  #print "h6"
-                 self.h=(1/(goal_l-self.position_l))
+                 self.h=W_S*(1/(goal_l-self.position_l))
             if self.action=="r_plus" and (not(isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0))):
-                 self.h=(1/(self.position_r - goal_r))
+                 self.h=W_S*(1/(self.position_r - goal_r))
                  #print "h7"
                  #self.h = 100
             if self.action=="r_minus" and (not(isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0))):
-                 self.h=(1/(goal_r-self.position_r))
+                 self.h=W_S*(1/(goal_r-self.position_r))
                  #print "h8"
                  #self.h=0
+            if self.action=="rotate_clockwise" or self.action=="rotate_anticlockwise":
+                self.h=R_S
 
         self.f = self.g+self.h
         print self.action,".h=",self.h
@@ -231,9 +263,9 @@ class node:
 
 
 
-    def find_neighbours(self, COST_T, COST_R,goal_l,goal_r):
+    def find_neighbours(self, COST_T, COST_R,goal_l,goal_r,goal_orientation):
         neighbours = []
-        actions=("l_plus","l_minus","r_plus","r_minus")
+        actions=("l_plus","l_minus","r_plus","r_minus","rotate_clockwise","rotate_anticlockwise")
 
         if (limit_check(self.position_l + SLIDING_RESOLUTION,self.position_r ,actions[0])):
             action="l_plus"
@@ -263,21 +295,20 @@ class node:
             r_plus=node(SLIDING_RESOLUTION,self.position_l,self.position_r,self.orientation,self,action)
             neighbours.append(r_plus)
 
+        if (limit_check(self.position_l,self.position_r + SLIDING_RESOLUTION,actions[4])):
+
+            action = "rotate_clockwise"
+            rotate_clockwise=node(SLIDING_RESOLUTION,self.position_l,self.position_r,self.orientation,self,action)
+            neighbours.append(rotate_clockwise)
+
+        if (limit_check(self.position_l,self.position_r + SLIDING_RESOLUTION,actions[5])):
+
+            action = "rotate_anticlockwise"
+            rotate_anticlockwise=node(SLIDING_RESOLUTION,self.position_l,self.position_r,self.orientation,self,action)
+            neighbours.append(rotate_anticlockwise)
+
             
 
-        # if (self.position + ROTATION_SLIDE_RESOLUTION <= FINGER_END and self.position >= FINGER_START and self.parent != "o_minus" and COST_R>0):
-        #     o_plus.position = self.position + ROTATION_SLIDE_RESOLUTION
-        #     o_plus.orientation = self.orientation + 90
-        #     o_plus.action = "o_plus"
-        #     o_plus.parent = self
-        #     neighbours.append(o_plus)
-        #
-        # if (self.position + ROTATION_SLIDE_RESOLUTION <= FINGER_END and self.position >= FINGER_START and self.parent != "o_plus" and COST_R<0):
-        #     o_minus.position = self.position+ROTATION_SLIDE_RESOLUTION
-        #     o_minus.orientation = self.orientation - 90
-        #     o_minus.action = "o_minus"
-        #     o_minus.parent = self
-        #     neighbours.append(o_minus)
 
         return neighbours
 
@@ -285,16 +316,16 @@ class node:
 def A_star(start, goal):
     global NUMBER_OF_NODES_EXPANDED
     print "Start and Goal state validation"
-    if limit_check(start.position_l, start.position_r, "r_plus") and  limit_check(start.position_l, start.position_r, "l_plus"):
-        print"start_valid"
-    else:
-        print"Invalid startstate"
-        return None
-    if limit_check(goal.position_l, goal.position_r, "r_plus") and  limit_check(goal.position_l, goal.position_r, "l_plus"):
-        print"Goal_valid"
-    else:
-        print"Invalid Goalstate"
-        return None
+    # if limit_check(start.position_l, start.position_r, "r_plus") and  limit_check(start.position_l, start.position_r, "l_plus"):
+    #     print"start_valid"
+    # else:
+    #     print"Invalid startstate"
+    #     return None
+    # if limit_check(goal.position_l, goal.position_r, "r_plus") and  limit_check(goal.position_l, goal.position_r, "l_plus"):
+    #     print"Goal_valid"
+    # else:
+    #     print"Invalid Goalstate"
+    #     return None
 
 
     start_time = time.time()
@@ -308,7 +339,7 @@ def A_star(start, goal):
 
         cur = (open_list.get())[1]
         for exp_nodes in closed_list:
-            if isclose(exp_nodes[0],cur.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[1],cur.position_r, rel_tol=1e-09, abs_tol=0.0):
+            if isclose(exp_nodes[0],cur.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[1],cur.position_r, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[2],cur.orientation, rel_tol=1e-09, abs_tol=0.0):
                 print "already in closed list"
                 expanded=1
                 continue
@@ -321,7 +352,7 @@ def A_star(start, goal):
         print "l=",(cur.position_l)
         print "r=",(cur.position_r)
         print "total_cost=",cur.f
-        exp= [cur.position_l,cur.position_r]
+        exp= [cur.position_l,cur.position_r,cur.orientation]
         closed_list.append(exp)
         NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
 
@@ -341,15 +372,15 @@ def A_star(start, goal):
                 break
 
 
-        neighbours=cur.find_neighbours(1,0,goal.position_l,goal.position_r)
+        neighbours=cur.find_neighbours(1,0,goal.position_l,goal.position_r,goal.orientation)
         for nod in neighbours:
             flag=True
             for exp_nodes in closed_list:
-                if(exp_nodes[0] == nod.position_l) and (exp_nodes[1] == nod.position_r):
+                if(exp_nodes[0] == nod.position_l) and (exp_nodes[1] == nod.position_r) and exp_nodes[2]==nod.orientation:
                     flag=False
 
             if(flag):
-                nod.update(cur.f,goal.position_l,goal.position_r)
+                nod.update(cur.f,goal.position_l,goal.position_r,goal.orientation)
                 open_list.put((nod.f,nod))
 
         #cur = queue.pop(0)
@@ -375,11 +406,15 @@ def backtrace(cur):
 def high_level_plan(start, goal):
     l = A_star(start, goal)
 
-start = node(0,5.0,5.0,0,None,None)
+start = node(0,6,6.0,0,None,None)
 
-goal = node(0,3.0,4.0,0,None,None)
+goal = node(0,6+OBJECT_SIZE,6-OBJECT_SIZE,90,None,None)
 high_level_plan(start, goal)
 
+if(limit_check(4,10,"rotate_clockwise")):
+    print("yes")
+else:
+    print("no")
 #Robot params
 w0=2.5
 wp=5
