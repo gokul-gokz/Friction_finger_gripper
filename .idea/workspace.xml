@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="65ca4eb8-45c5-41ea-bc86-dd0454ad3934" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/finger_controller_six_action _astar.py" beforeDir="false" afterPath="$PROJECT_DIR$/finger_controller_six_action _astar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/finger_controller_six_action _astar_hirarchial_planning.py" beforeDir="false" afterPath="$PROJECT_DIR$/finger_controller_six_action _astar_hirarchial_planning.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,38 +15,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="355">
-              <caret line="561" column="11" lean-forward="true" selection-start-line="561" selection-start-column="11" selection-end-line="561" selection-end-column="11" />
+            <state relative-caret-position="3989">
+              <caret line="625" column="41" lean-forward="true" selection-start-line="625" selection-start-column="41" selection-end-line="625" selection-end-column="41" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="373">
-              <caret line="1757" selection-start-line="1757" selection-end-line="1757" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar_hirarchial_planning.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-966">
-              <caret line="403" column="11" lean-forward="true" selection-start-line="403" selection-start-column="11" selection-end-line="403" selection-end-column="11" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../.virtualenvs/Friction_finger_gripper/local/lib/python2.7/site-packages/sympy/core/compatibility.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1571">
-              <caret line="889" selection-start-line="889" selection-end-line="889" />
             </state>
           </provider>
         </entry>
@@ -64,6 +36,7 @@
       <find>final_path</find>
       <find>path</find>
       <find>start</find>
+      <find>limit</find>
     </findStrings>
     <replaceStrings>
       <replace>TH2_MIN</replace>
@@ -91,10 +64,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="248" />
+    <option name="x" value="65" />
     <option name="y" value="-4" />
-    <option name="width" value="1278" />
-    <option name="height" value="1041" />
+    <option name="width" value="1615" />
+    <option name="height" value="1054" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -116,6 +89,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -213,15 +187,14 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1615" height="1054" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.01884422" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.1787592" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.44312027" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.41535226" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4426919" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -243,45 +216,43 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>451</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>488</line>
+          <line>521</line>
           <option name="timeStamp" value="19" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>560</line>
+          <line>593</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>563</line>
+          <line>596</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>449</line>
-          <option name="timeStamp" value="22" />
+          <line>366</line>
+          <option name="timeStamp" value="27" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>442</line>
-          <option name="timeStamp" value="24" />
+          <line>369</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
+          <line>192</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
+          <line>194</line>
+          <option name="timeStamp" value="30" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="373">
-          <caret line="1757" selection-start-line="1757" selection-end-line="1757" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../.virtualenvs/Friction_finger_gripper/local/lib/python2.7/site-packages/sympy/core/compatibility.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1571">
@@ -291,15 +262,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar_hirarchial_planning.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-966">
-          <caret line="403" column="11" lean-forward="true" selection-start-line="403" selection-start-column="11" selection-end-line="403" selection-end-column="11" />
+        <state relative-caret-position="-5930">
+          <caret line="97" column="39" lean-forward="true" selection-start-line="97" selection-start-column="39" selection-end-line="97" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="624">
+          <caret line="1757" selection-start-line="1757" selection-end-line="1757" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="355">
-          <caret line="561" column="11" lean-forward="true" selection-start-line="561" selection-start-column="11" selection-end-line="561" selection-end-column="11" />
+        <state relative-caret-position="3989">
+          <caret line="625" column="41" lean-forward="true" selection-start-line="625" selection-start-column="41" selection-end-line="625" selection-end-column="41" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>

@@ -174,18 +174,22 @@ def limit_check(left_pos,right_pos,action):
     global right_position
     left_position=left_pos
     right_position=right_pos
+    print action
 
     if(action=="l_plus" or action=="l_minus" or action=="r_plus" or action=="r_minus"):
         if(left_position<FINGER_END and left_position>FINGER_START and right_position<FINGER_END and right_position>FINGER_START):
             sol=theta_conversion(left_position, right_position, action)
-
+            TH2_MAX = calculate_th2(TH1_MAX, left_position)
+            TH1_MIN = calculate_th1(TH2_MIN, right_position)
             th1=sol[0]
             th2 = sol[1]
+            print "th2_max=",TH2_MAX
+            print "th1_min=",TH1_MIN
             print "th1=",th1
             print "th2=",th2
 
 
-            if(th1<=TH1_MAX and th2>=TH2_MIN):
+            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
                 return True
             else:
                 print "range_limit_exceeding for sliding"
@@ -222,7 +226,7 @@ def limit_check(left_pos,right_pos,action):
                 return False
 
 
-
+    print "-------------"
 
 
 
@@ -270,10 +274,9 @@ class node:
 
     def update(self,g,goal_l,goal_r,goal_orientation):
         self.g = g + 10;
+        global orientation_correction_done
 
-
-
-        if(1):
+        if(orientation_correction_done):
             if self.action=="l_plus" and (not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0))):
                  #print "h5"
                  self.h=W_S*(1/(self.position_l - goal_l))
@@ -313,6 +316,36 @@ class node:
                     self.h = -10000
                 if self.action == "rotate_anticlockwise":
                     self.h = -10000
+        else:
+            if((goal_orientation-self.orientation)>0):
+                if self.action=="l_minus":
+                    self.h=-(1.0/(self.position_l-FINGER_START))*W_S;
+                if self.action == "r_plus":
+                    self.h = -( FINGER_END-self.position_r) * W_S;
+
+                if self.action == "l_plus":
+                    self.h = 0;
+
+                if self.action == "r_minus":
+                    self.h = 0;
+
+            if ((goal_orientation - self.orientation) < 0):
+                if self.action == "r_minus":
+                    self.h = -(self.position_r - FINGER_START) * W_S;
+                if self.action == "l_plus":
+                    self.h = -(1.0/(FINGER_END - self.position_l)) * W_S;
+
+
+                if self.action == "l_minus":
+                    self.h = 0;
+
+                if self.action == "r_plus":
+                    self.h = 0;
+
+            if self.action=="rotate_clockwise":
+                self.h=R_S*(self.orientation-goal_orientation)
+            if self.action=="rotate_anticlockwise":
+                self.h = R_S * (goal_orientation-self.orientation)
 
         self.f = self.g+self.h
         print self.action,".h=",self.h
@@ -531,7 +564,7 @@ def plot(L,R,A):
         x,y=finger_to_cartesian(L[i],R[i],A[i],theta)
         X.append(x)
         Y.append(y)
-
+        print  "L=",L[i],"R=",R[i]
         print "theta1=",theta[0],"theta2=",theta[1]
         print "x=",x,"y=",y
         # print theta
@@ -568,11 +601,11 @@ def high_level_plan(start, goal):
 #
 # goal = node(0,6.0,6.0,0,None,None)
 
-start = node(0,7.9,10.2,0,None,None)
+start = node(0,10,6,0,None,None)
 
 goal = node(0,6.0,6,90,None,None)
 
-high_level_plan(start, goal)
+#high_level_plan(start, goal)
 
 
 
@@ -589,3 +622,6 @@ high_level_plan(start, goal)
 # print theta_conversion(6.0,7.5,'r_plus')
 # print finger_to_cartesian(6.0,7.5,'r_plus',theta_conversion(6.0,7.5,'r_plus'))
 # # print finger_to_cartesian(8.0,8.0,'l_plus',theta_conversion(8.0,8.0,'l_plus'))
+print limit_check(9.6,12,"l_minus")
+theta1=theta_conversion(9.6,12,"l_minus")
+print finger_to_cartesian(9.6,12,"l_minus",theta1)
