@@ -21,7 +21,7 @@ ROTATION_SLIDE_RESOLUTION=0.2
 PALM_WIDTH = 5
 OBJECT_SIZE= 2.5
 TH1_MAX= 2.485 #142.5 degrees
-TH2_MAX= 0.65 #37.5
+TH2_MIN= 0.65 #37.5
 FINGER_WIDTH=1
 K=0.1
 NUMBER_OF_NODES_EXPANDED=0
@@ -63,6 +63,30 @@ def ik_finger(x, y, w0, wp, fw):
     t1 = np.arctan2(float(av[1]), float(av[0])) - np.arctan2(float(fw), float(d1))
     return t1, solt2[1], d1, sold2[1]
 
+def calculate_th1(th2, d2):
+    # Calculate theta2, d2
+    d2v = np.array([d2 * np.cos(np.float64(th2)), d2 * np.sin(np.float64(th2))])
+    w0v = np.array([OBJECT_SIZE * np.sin(np.float64(th2)), -OBJECT_SIZE * np.cos(np.float64(th2))])
+    wpv = np.array([PALM_WIDTH, 0])
+    f1v = np.array([FINGER_WIDTH * np.sin(np.float64(th2)), -FINGER_WIDTH * np.cos(np.float64(th2))])
+    av = d2v + f1v + w0v - wpv
+
+    d1 = np.sqrt((av * av).sum() - FINGER_WIDTH * FINGER_WIDTH)
+    th1 = np.arctan2(av[1], av[0]) - np.arctan2(FINGER_WIDTH, d1)
+
+    return th1
+
+def calculate_th2(th1, d1):
+    d1v = np.array([d1 * np.cos(th1), d1 * np.sin(th1)])
+    w0v = np.array([OBJECT_SIZE * np.sin(th1), OBJECT_SIZE * np.cos(th1)])
+    wpv = np.array([PALM_WIDTH, 0])
+    f2v = np.array([FINGER_WIDTH * np.sin(th1), FINGER_WIDTH * np.cos(th1)])
+    av = d1v - w0v - f2v + wpv
+
+    d2 = np.sqrt((av * av).sum() - FINGER_WIDTH * FINGER_WIDTH)
+    th2 = np.arctan2(av[1], av[0]) + np.arctan2(FINGER_WIDTH, d2)
+
+    return th2
 
 def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
     '''
@@ -156,17 +180,12 @@ def limit_check(left_pos,right_pos,action):
             sol=theta_conversion(left_position, right_position, action)
 
             th1=sol[0]
-
-            #print th1
-            th2=sol[1]
-            #print th2
-
-            # print th1
-            th2=sol[1]
-            # print th2
+            th2 = sol[1]
+            print "th1=",th1
+            print "th2=",th2
 
 
-            if(th1<=TH1_MAX and th2>=TH2_MAX):
+            if(th1<=TH1_MAX and th2>=TH2_MIN):
                 return True
             else:
                 print "range_limit_exceeding for sliding"
@@ -176,21 +195,35 @@ def limit_check(left_pos,right_pos,action):
 
     elif action=="rotate_clockwise":
         th1=theta_conversion(left_position, right_position, action)
+        th2=calculate_th2(th1,left_position)
+        TH2_MAX=calculate_th2(TH1_MAX,left_position)
+        TH1_MIN=calculate_th1(TH2_MIN,right_position)
+
         print"rotate_action_clock(th1)=",th1
 
-        if(th1<=TH1_MAX ):
-                return True
+        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+            return True
         else:
                 print "range_limit_exceeding for rotate clockwise"
                 return False
 
     elif action=="rotate_anticlockwise":
         th2=theta_conversion(left_position, right_position, action)
-        if(th2>=TH2_MAX ):
-                return True
+        th1 = calculate_th1(th2, right_position)
+        TH2_MAX = calculate_th2( TH1_MAX,left_position)
+        TH1_MIN = calculate_th1(TH2_MIN,right_position)
+        print"rotate_action_anticlock(th2)=", th2
+
+
+        if(th2>=TH2_MIN  and th2<=TH2_MAX and th1<=TH1_MAX and th1>=TH1_MIN):
+            return True
         else:
                 print "range_limit_exceeding for rotate anticlockwise"
                 return False
+
+
+
+
 
 
 class node:
@@ -343,6 +376,7 @@ class node:
 
 
 def A_star(start, goal):
+    final_path = []
     global orientation_correction_done
     global NUMBER_OF_NODES_EXPANDED
     print "Start and Goal state validation"
@@ -364,7 +398,7 @@ def A_star(start, goal):
     open_list=Queue.PriorityQueue()
     open_list.put((start.f,start))
     closed_list=[]
-    final_path=[]
+
     expanded=0
 
     while(1):
@@ -380,10 +414,10 @@ def A_star(start, goal):
             expanded=0
             continue
 
-        # print "action=",cur.action
-        # print "l=",(cur.position_l)
-        # print "r=",(cur.position_r)
-        # print "total_cost=",cur.f
+        print "action=",cur.action
+        print "l=",(cur.position_l)
+        print "r=",(cur.position_r)
+        print "total_cost=",cur.f
         exp= [cur.position_l,cur.position_r,cur.orientation]
         closed_list.append(exp)
         NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
@@ -398,16 +432,23 @@ def A_star(start, goal):
                 # print (goal.position_r)
             print "Orientation correction done"
             print "Time_taken", end_time - start_time
-            final_path= backtrace(cur)
+            final_path=backtrace(cur)
             orientation_correction_done=True
+            start = node(0, cur.position_l, cur.position_r, cur.orientation, None, None)
+            open_list=Queue.PriorityQueue()
+            open_list.put((start.f,start))
+            closed_list=[]
+            #return A_star(start, goal)
 
-        if ((isclose(cur.position_l, goal.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(cur.position_r,
+        if isclose(cur.position_l, goal.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(cur.position_r,
                                                                                                      goal.position_r,
                                                                                                      rel_tol=1e-09,
-                                                                                                        abs_tol=0.0) and (isclose(cur.orientation, goal.orientation,rel_tol=1e-09,abs_tol=0.0 ))) and orientation_correction_done):
+                                                                                                        abs_tol=0.0)and orientation_correction_done:
+            end_time = time.time()
             print "position correction done"
             print "Time_taken", end_time - start_time
-            final_path=final_path+backtrace(cur)
+            final_path=final_path+(backtrace(cur))
+
             return final_path
 
 
@@ -431,21 +472,23 @@ def A_star(start, goal):
 
 
 
+
 def backtrace(cur):
     path = []
-    R_position=[]
-    L_position=[]
+    R_position = []
+    L_position = []
     while not cur.parent == None:
         path.append(cur.action)
         print "node=", cur.action, "cost=", cur.f,"left=",cur.position_l,"right=",cur.position_r
         L_position.append(cur.position_l)
         R_position.append(cur.position_r)
         cur = cur.parent
+    path.reverse()
     print"Number of nodes expanded=",NUMBER_OF_NODES_EXPANDED
     print"Length of solution=",len(path)
     print path
 
-    #plot(L_position,R_position,path)
+    plot(L_position,R_position,path)
 
     return path
 
@@ -466,16 +509,29 @@ def finger_to_cartesian(L,R,A,th):
 
 
 def plot(L,R,A):
-    n=len(A)
+    n=len(R)
     X=[]
     Y=[]
-    for i in range(n-1,0,-1):
+    print "size of l=",len(L)
+    print "size of R=", len(R)
+    print "size of A=", len(A)
+    for i in range(n):
+        print "Action=", A[i]
+        if(A[i]=="rotate_clockwise" ):
+            print "hello"
+            R[i]=R[i]-0.1
+            L[i]=L[i]
+            A[i]="r_plus"
+        elif(A[i]=="rotate_anticlockwise"):
+            R[i] = R[i] -0.1
+            L[i] = L[i]
+            A[i] = "r_plus"
 
         theta=theta_conversion(L[i],R[i],A[i])
         x,y=finger_to_cartesian(L[i],R[i],A[i],theta)
         X.append(x)
         Y.append(y)
-        print "Action=",A[i]
+
         print "theta1=",theta[0],"theta2=",theta[1]
         print "x=",x,"y=",y
         # print theta
@@ -505,15 +561,16 @@ def high_level_plan(start, goal):
     print"----------------------------------Final solution------------------------------"
     print l
     print "Length of solution=",len(l)
+    #plot(L_position, R_position, l)
 
 
 # start = node(0,4.0,4.0,0,None,None)
 #
 # goal = node(0,6.0,6.0,0,None,None)
 
-start = node(0,6,6.0,0,None,None)
+start = node(0,7.9,10.2,0,None,None)
 
-goal = node(0,4.0,5.0,180,None,None)
+goal = node(0,6.0,6,90,None,None)
 
 high_level_plan(start, goal)
 

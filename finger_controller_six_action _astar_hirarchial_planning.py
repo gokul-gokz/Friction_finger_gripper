@@ -380,10 +380,10 @@ def A_star(start, goal):
             expanded=0
             continue
 
-        # print "action=",cur.action
-        # print "l=",(cur.position_l)
-        # print "r=",(cur.position_r)
-        # print "total_cost=",cur.f
+        print "action=",cur.action
+        print "l=",(cur.position_l)
+        print "r=",(cur.position_r)
+        print "total_cost=",cur.f
         exp= [cur.position_l,cur.position_r,cur.orientation]
         closed_list.append(exp)
         NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
@@ -401,13 +401,13 @@ def A_star(start, goal):
             final_path= backtrace(cur)
             orientation_correction_done=True
 
-        if ((isclose(cur.position_l, goal.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(cur.position_r,
+        if (isclose(cur.position_l, goal.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(cur.position_r,
                                                                                                      goal.position_r,
                                                                                                      rel_tol=1e-09,
-                                                                                                        abs_tol=0.0) and (isclose(cur.orientation, goal.orientation,rel_tol=1e-09,abs_tol=0.0 ))) and orientation_correction_done):
+                                                                                                        abs_tol=0.0)  and orientation_correction_done):
             print "position correction done"
             print "Time_taken", end_time - start_time
-            final_path=final_path+backtrace(cur)
+            final_path=backtrace(cur)
             return final_path
 
 
@@ -502,9 +502,9 @@ def plot(L,R,A):
 
 def high_level_plan(start, goal):
     l = A_star(start, goal)
-    print"----------------------------------Final solution------------------------------"
-    print l
-    print "Length of solution=",len(l)
+    # print"----------------------------------Final solution------------------------------"
+    # print l
+    # print "Length of solution=",len(l)
 
 
 # start = node(0,4.0,4.0,0,None,None)
@@ -513,7 +513,7 @@ def high_level_plan(start, goal):
 
 start = node(0,6,6.0,0,None,None)
 
-goal = node(0,4.0,5.0,180,None,None)
+goal = node(0,4.0,5.0,-90,None,None)
 
 high_level_plan(start, goal)
 
