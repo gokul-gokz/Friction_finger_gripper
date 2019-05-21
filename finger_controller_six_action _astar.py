@@ -183,10 +183,16 @@ def limit_check(left_pos,right_pos,action):
             TH1_MIN = calculate_th1(TH2_MIN, right_position)
             th1=sol[0]
             th2 = sol[1]
-            print "th2_max=",TH2_MAX
-            print "th1_min=",TH1_MIN
-            print "th1=",th1
-            print "th2=",th2
+            # print left_pos
+            # print right_pos
+            # print action
+            # print "th2_max=",TH2_MAX
+            # print "th1_min=",TH1_MIN
+            # print "th1=",th1
+            # print "th2=",th2
+
+            # if(isclose(left_pos,9.7,rel_tol=1e-09, abs_tol=0.0)) and (isclose(right_pos, 11.3, rel_tol=1e-09, abs_tol=0.0)):
+            #    print finger_to_cartesian(left_pos,right_pos,action,sol)
 
 
             if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
@@ -226,8 +232,6 @@ def limit_check(left_pos,right_pos,action):
                 return False
 
 
-    print "-------------"
-
 
 
 class node:
@@ -241,36 +245,38 @@ class node:
         self.h = 0
         self.f = 0
 
+
         if (a=="l_plus"):
             self.position_l = pose_l + res
             self.position_r=pose_r
-            (self.th1,self.th2)= theta_conversion(self.position_l, self.position_r, a)
+            (self.theta)= theta_conversion(self.position_l, self.position_r, a)
         elif(a=="l_minus"):
             self.position_l = pose_l - res
             self.position_r = pose_r
-            (self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+            (self.theta) = theta_conversion(self.position_l, self.position_r, a)
         elif(a=="r_plus"):
             self.position_r = pose_r + res
             self.position_l = pose_l
-            (self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+            (self.theta) = theta_conversion(self.position_l, self.position_r, a)
         elif(a=="r_minus"):
             self.position_r = pose_r - res
             self.position_l = pose_l
-            (self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+            (self.theta) = theta_conversion(self.position_l, self.position_r, a)
         elif(a=="rotate_clockwise"):
             self.position_r = pose_r -OBJECT_SIZE
             self.position_l = pose_l +OBJECT_SIZE
             self.orientation= pose_o+90
-            #(self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+            (self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
         elif(a=="rotate_anticlockwise"):
             self.position_r = pose_r + OBJECT_SIZE
             self.position_l = pose_l - OBJECT_SIZE
             self.orientation=pose_o-90
-            #(self.th1, self.th2) = theta_conversion(self.position_l, self.position_r, a)
+            (self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
         else:
             self.position_r = pose_r
             self.position_l = pose_l
             self.orientation= pose_o
+            self.theta=None
 
     def update(self,g,goal_l,goal_r,goal_orientation):
         self.g = g + 10;
@@ -412,7 +418,7 @@ def A_star(start, goal):
     final_path = []
     global orientation_correction_done
     global NUMBER_OF_NODES_EXPANDED
-    print "Start and Goal state validation"
+    #print "Start and Goal state validation"
     # if limit_check(start.position_l, start.position_r, "r_plus") and  limit_check(start.position_l, start.position_r, "l_plus"):
     #     print"start_valid"
     # else:
@@ -424,12 +430,14 @@ def A_star(start, goal):
     #     print"Invalid Goalstate"
     #     return None
 
-
+    #Record the start time
     start_time = time.time()
-    #queue = [start]
-    #cur = queue.pop()
+
+    # Priority queue to stoe the unexpanded nodes
     open_list=Queue.PriorityQueue()
     open_list.put((start.f,start))
+
+    # Lis to store the expanded nodes
     closed_list=[]
 
     expanded=0
@@ -441,16 +449,16 @@ def A_star(start, goal):
             if isclose(exp_nodes[0],cur.position_l, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[1],cur.position_r, rel_tol=1e-09, abs_tol=0.0) and isclose(exp_nodes[2],cur.orientation, rel_tol=1e-09, abs_tol=0.0):
                 print "already in closed list"
                 expanded=1
-                continue
+                break
 
         if(expanded):
             expanded=0
             continue
 
-        print "action=",cur.action
-        print "l=",(cur.position_l)
-        print "r=",(cur.position_r)
-        print "total_cost=",cur.f
+        # print "action=",cur.action
+        # print "l=",(cur.position_l)
+        # print "r=",(cur.position_r)
+        # print "total_cost=",cur.f
         exp= [cur.position_l,cur.position_r,cur.orientation]
         closed_list.append(exp)
         NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
@@ -510,18 +518,23 @@ def backtrace(cur):
     path = []
     R_position = []
     L_position = []
+    theta=[]
     while not cur.parent == None:
         path.append(cur.action)
         print "node=", cur.action, "cost=", cur.f,"left=",cur.position_l,"right=",cur.position_r
         L_position.append(cur.position_l)
         R_position.append(cur.position_r)
+        theta.append(cur.theta)
         cur = cur.parent
     path.reverse()
+    L_position.reverse()
+    R_position.reverse()
+    theta.reverse()
     print"Number of nodes expanded=",NUMBER_OF_NODES_EXPANDED
     print"Length of solution=",len(path)
     print path
 
-    plot(L_position,R_position,path)
+    plot(L_position,R_position,theta,path)
 
     return path
 
@@ -530,7 +543,7 @@ def finger_to_cartesian(L,R,A,th):
         x_square = (L - OBJECT_SIZE/2.0)*np.cos(np.float64(th[0])) + (FINGER_WIDTH + OBJECT_SIZE/2.0)*np.sin(np.float64(th[0]))
         # x_square = (R - (OBJECT_SIZE/2.0))
         y_square = (L - OBJECT_SIZE/2.0)*np.sin(np.float64(th[0])) - (FINGER_WIDTH + OBJECT_SIZE/2.0)*np.cos(np.float64(th[0]))
-        print "R_executed"
+
 
     elif A=="l_plus" or A=="l_minus":
         x_square = PALM_WIDTH + (R - OBJECT_SIZE/2.0)* np.cos(th[1]) - (OBJECT_SIZE/2.0 + FINGER_WIDTH)* np.sin(th[1])
@@ -541,13 +554,14 @@ def finger_to_cartesian(L,R,A,th):
 
 
 
-def plot(L,R,A):
+def plot(L,R,theta,A):
     n=len(R)
     X=[]
     Y=[]
-    print "size of l=",len(L)
-    print "size of R=", len(R)
-    print "size of A=", len(A)
+    count=[]
+    # print "size of l=",len(L)
+    # print "size of R=", len(R)
+    # print "size of A=", len(A)
     for i in range(n):
         print "Action=", A[i]
         if(A[i]=="rotate_clockwise" ):
@@ -555,22 +569,27 @@ def plot(L,R,A):
             R[i]=R[i]-0.1
             L[i]=L[i]
             A[i]="r_plus"
+            count.append(i)
         elif(A[i]=="rotate_anticlockwise"):
             R[i] = R[i] -0.1
             L[i] = L[i]
             A[i] = "r_plus"
+            count.append(i)
 
-        theta=theta_conversion(L[i],R[i],A[i])
-        x,y=finger_to_cartesian(L[i],R[i],A[i],theta)
+        x,y=finger_to_cartesian(L[i],R[i],A[i],theta[i])
         X.append(x)
         Y.append(y)
         print  "L=",L[i],"R=",R[i]
-        print "theta1=",theta[0],"theta2=",theta[1]
+        print "theta1=",theta[i][0],"theta2=",theta[i][1]
         print "x=",x,"y=",y
-        # print theta
+
 
     # plotting the points
     plt.plot(X, Y)
+    for j in range(len(count)):
+        print "X=", [X[count[j] - 1], X[count[j]]], "Y=", [Y[count[j] - 1], Y[count[j]]]
+        plt.plot([X[count[j]-1],X[count[j]]],[Y[count[j]-1],Y[count[j]]],'r')
+
 
     plt.xlim([-10, 10])
     plt.ylim([0, 15])
@@ -591,21 +610,20 @@ def plot(L,R,A):
 
 def high_level_plan(start, goal):
     l = A_star(start, goal)
-    print"----------------------------------Final solution------------------------------"
-    print l
-    print "Length of solution=",len(l)
+    # print"----------------------------------Final solution------------------------------"
+    # print l
+    # print "Length of solution=",len(l)
     #plot(L_position, R_position, l)
 
 
-# start = node(0,4.0,4.0,0,None,None)
-#
-# goal = node(0,6.0,6.0,0,None,None)
+# Main function to run standalone
+if __name__=="__main__":
 
-start = node(0,10,6,0,None,None)
+    start = node(0,6,6,0,None,None)
 
-goal = node(0,6.0,6,90,None,None)
+    goal = node(0,6,6,180,None,None)
 
-#high_level_plan(start, goal)
+    high_level_plan(start, goal)
 
 
 
@@ -622,6 +640,9 @@ goal = node(0,6.0,6,90,None,None)
 # print theta_conversion(6.0,7.5,'r_plus')
 # print finger_to_cartesian(6.0,7.5,'r_plus',theta_conversion(6.0,7.5,'r_plus'))
 # # print finger_to_cartesian(8.0,8.0,'l_plus',theta_conversion(8.0,8.0,'l_plus'))
-print limit_check(9.6,12,"l_minus")
-theta1=theta_conversion(9.6,12,"l_minus")
-print finger_to_cartesian(9.6,12,"l_minus",theta1)
+# l=9.7
+# r=11.3
+# a="l_plus"
+# print limit_check(l,r,a)
+# theta1=theta_conversion(l,r,a)
+# print finger_to_cartesian(l,r,a,theta1)

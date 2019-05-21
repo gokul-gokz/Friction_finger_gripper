@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="65ca4eb8-45c5-41ea-bc86-dd0454ad3934" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/finger_controller_six_action _astar.py" beforeDir="false" afterPath="$PROJECT_DIR$/finger_controller_six_action _astar.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,11 +16,20 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3989">
-              <caret line="625" column="41" lean-forward="true" selection-start-line="625" selection-start-column="41" selection-end-line="625" selection-end-column="41" />
+            <state relative-caret-position="-30">
+              <caret line="590" column="75" selection-start-line="590" selection-start-column="75" selection-end-line="590" selection-end-column="75" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="167">
+              <caret line="1146" selection-start-line="1146" selection-end-line="1146" />
             </state>
           </provider>
         </entry>
@@ -37,6 +47,14 @@
       <find>path</find>
       <find>start</find>
       <find>limit</find>
+      <find>debug</find>
+      <find>deb</find>
+      <find>9.7</find>
+      <find>11.3</find>
+      <find>print</find>
+      <find>R_position</find>
+      <find>rotate</find>
+      <find>rotate_antic</find>
     </findStrings>
     <replaceStrings>
       <replace>TH2_MIN</replace>
@@ -74,7 +92,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -86,6 +103,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -186,14 +204,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1615" height="1054" extended-state="6" />
+    <frame x="64" y="-4" width="1617" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.01884422" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.41535226" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.35541534" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4426919" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -216,38 +235,33 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>521</line>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>593</line>
+          <line>612</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>596</line>
+          <line>615</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>366</line>
-          <option name="timeStamp" value="27" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>369</line>
-          <option name="timeStamp" value="28" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
-          <line>192</line>
-          <option name="timeStamp" value="29" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
           <line>194</line>
-          <option name="timeStamp" value="30" />
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
+          <line>449</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
+          <line>450</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/finger_controller_six_action _astar.py</url>
+          <line>179</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -269,15 +283,15 @@
     </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="624">
-          <caret line="1757" selection-start-line="1757" selection-end-line="1757" />
+        <state relative-caret-position="167">
+          <caret line="1146" selection-start-line="1146" selection-end-line="1146" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/finger_controller_six_action _astar.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3989">
-          <caret line="625" column="41" lean-forward="true" selection-start-line="625" selection-start-column="41" selection-end-line="625" selection-end-column="41" />
+        <state relative-caret-position="-30">
+          <caret line="590" column="75" selection-start-line="590" selection-start-column="75" selection-end-line="590" selection-end-column="75" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
