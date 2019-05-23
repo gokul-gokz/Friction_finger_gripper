@@ -4,6 +4,7 @@ import math
 import Queue
 
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 #from mpmath import *
 from sympy import *
@@ -278,7 +279,7 @@ class node:
             self.orientation= pose_o
             self.theta=None
 
-    def update(self,g,goal_l,goal_r,goal_orientation):
+    def update(self,g,goal_l,goal_r,goal_orientation,parent):
         self.g = g + 10;
         global orientation_correction_done
 
@@ -295,6 +296,9 @@ class node:
                  #self.h = 100
             if self.action=="r_minus" and (not(isclose(self.position_r, goal_r, rel_tol=1e-09, abs_tol=0.0))):
                  self.h=W_S*(1/(goal_r-self.position_r))
+
+            if (self.action == parent):
+                 self.h = self.h - 1000;
                  #print "h8"
                  #self.h=0
             if self.action=="rotate_clockwise":
@@ -322,6 +326,10 @@ class node:
                     self.h = -10000
                 if self.action == "rotate_anticlockwise":
                     self.h = -10000
+
+
+
+
         else:
             if((goal_orientation-self.orientation)>0):
                 if self.action=="l_minus":
@@ -347,6 +355,9 @@ class node:
 
                 if self.action == "r_plus":
                     self.h = 0;
+
+            if (self.action == parent):
+                self.h = self.h - 1000;
 
             if self.action=="rotate_clockwise":
                 self.h=R_S*(self.orientation-goal_orientation)
@@ -433,11 +444,11 @@ def A_star(start, goal):
     #Record the start time
     start_time = time.time()
 
-    # Priority queue to stoe the unexpanded nodes
+    # Priority queue to store the unexpanded nodes
     open_list=Queue.PriorityQueue()
     open_list.put((start.f,start))
 
-    # Lis to store the expanded nodes
+    # List to store the expanded nodes
     closed_list=[]
 
     expanded=0
@@ -502,7 +513,7 @@ def A_star(start, goal):
                     flag=False
 
             if(flag):
-                nod.update(cur.f,goal.position_l,goal.position_r,goal.orientation)
+                nod.update(cur.f,goal.position_l,goal.position_r,goal.orientation,cur.action)
                 open_list.put((nod.f,nod))
 
         #cur = queue.pop(0)
@@ -590,6 +601,8 @@ def plot(L,R,theta,A):
         print "X=", [X[count[j] - 1], X[count[j]]], "Y=", [Y[count[j] - 1], Y[count[j]]]
         plt.plot([X[count[j]-1],X[count[j]]],[Y[count[j]-1],Y[count[j]]],'r')
 
+    plt.plot(X[len(X)-1],Y[len(Y)-1],'g*')
+    plt.plot(X[0],Y[0],'yo')
 
     plt.xlim([-10, 10])
     plt.ylim([0, 15])
@@ -601,6 +614,21 @@ def plot(L,R,theta,A):
 
     # giving a title to my graph
     plt.title('Trajectory tracked by the block ')
+
+    #Legend
+    # # legend_elements = [Line2D([0], [0], color='b', lw=1, label='Sliding Action'),
+    # #                    Line2D([0], [0], marker='o', color='w', label='Start',
+    # #                           markerfacecolor='y', markersize=10),
+    # #                    Line2D([0], [0], marker='*', color='w', label='Goal',
+    # #                           markerfacecolor='g', markersize=10),
+    #                   ]
+
+    # legend_elements = [Line2D([0], [0], color='b', lw=4, label='Line'),
+    #                    Line2D([0], [0], marker='o', color='w', label='Scatter',
+    #                           markerfacecolor='g', markersize=15),
+    #                    ]
+
+    #plt.legend(handles=legend_elements)
 
     # function to show the plot
     plt.show()
@@ -619,9 +647,9 @@ def high_level_plan(start, goal):
 # Main function to run standalone
 if __name__=="__main__":
 
-    start = node(0,6,6,0,None,None)
+    start = node(0,10,7,0,None,None)
 
-    goal = node(0,6,6,180,None,None)
+    goal = node(0,7,7,-90,None,None)
 
     high_level_plan(start, goal)
 
