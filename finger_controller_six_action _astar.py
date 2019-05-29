@@ -29,6 +29,7 @@ NUMBER_OF_NODES_EXPANDED=0
 PHI=3.14
 W_S=100
 R_S=1000
+W_P=100
 
 left_position=0
 right_position=0
@@ -70,22 +71,22 @@ def calculate_th1(th2, d2):
     w0v = np.array([OBJECT_SIZE * np.sin(np.float64(th2)), -OBJECT_SIZE * np.cos(np.float64(th2))])
     wpv = np.array([PALM_WIDTH, 0])
     f1v = np.array([FINGER_WIDTH * np.sin(np.float64(th2)), -FINGER_WIDTH * np.cos(np.float64(th2))])
-    av = d2v + f1v + w0v - wpv
+    av = d2v - f1v - w0v + wpv
 
     d1 = np.sqrt((av * av).sum() - FINGER_WIDTH * FINGER_WIDTH)
-    th1 = np.arctan2(av[1], av[0]) - np.arctan2(FINGER_WIDTH, d1)
+    th1 = np.arctan2(av[1], av[0]) + np.arctan2(FINGER_WIDTH, d1)
 
     return th1
 
 def calculate_th2(th1, d1):
     d1v = np.array([d1 * np.cos(th1), d1 * np.sin(th1)])
-    w0v = np.array([OBJECT_SIZE * np.sin(th1), OBJECT_SIZE * np.cos(th1)])
+    w0v = np.array([OBJECT_SIZE * np.sin(th1), -OBJECT_SIZE * np.cos(th1)])
     wpv = np.array([PALM_WIDTH, 0])
-    f2v = np.array([FINGER_WIDTH * np.sin(th1), FINGER_WIDTH * np.cos(th1)])
-    av = d1v - w0v - f2v + wpv
+    f2v = np.array([FINGER_WIDTH * np.sin(th1), -FINGER_WIDTH * np.cos(th1)])
+    av = d1v + w0v + f2v - wpv
 
     d2 = np.sqrt((av * av).sum() - FINGER_WIDTH * FINGER_WIDTH)
-    th2 = np.arctan2(av[1], av[0]) + np.arctan2(FINGER_WIDTH, d2)
+    th2 = np.arctan2(av[1], av[0]) - np.arctan2(FINGER_WIDTH, d2)
 
     return th2
 
@@ -205,32 +206,38 @@ def limit_check(left_pos,right_pos,action):
              return False
 
     elif action=="rotate_clockwise":
-        th1=theta_conversion(left_position, right_position, action)
-        th2=calculate_th2(th1,left_position)
-        TH2_MAX=calculate_th2(TH1_MAX,left_position)
-        TH1_MIN=calculate_th1(TH2_MIN,right_position)
+        if (left_position+OBJECT_SIZE < FINGER_END and left_position+OBJECT_SIZE > FINGER_START and right_position-OBJECT_SIZE < FINGER_END and right_position-OBJECT_SIZE > FINGER_START):
+            th1=theta_conversion(left_position, right_position, action)
+            th2=calculate_th2(th1,left_position)
+            TH2_MAX=calculate_th2(TH1_MAX,left_position)
+            TH1_MIN=calculate_th1(TH2_MIN,right_position)
 
-        print"rotate_action_clock(th1)=",th1
+            print"rotate_action_clock(th1)=",th1
 
-        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-            return True
+            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                return True
+            else:
+                    print "range_limit_exceeding for rotate clockwise"
+                    return False
         else:
-                print "range_limit_exceeding for rotate clockwise"
-                return False
+            return False
 
     elif action=="rotate_anticlockwise":
-        th2=theta_conversion(left_position, right_position, action)
-        th1 = calculate_th1(th2, right_position)
-        TH2_MAX = calculate_th2( TH1_MAX,left_position)
-        TH1_MIN = calculate_th1(TH2_MIN,right_position)
-        print"rotate_action_anticlock(th2)=", th2
+        if (left_position - OBJECT_SIZE < FINGER_END and left_position - OBJECT_SIZE > FINGER_START and right_position + OBJECT_SIZE < FINGER_END and right_position + OBJECT_SIZE > FINGER_START):
+            th2=theta_conversion(left_position, right_position, action)
+            th1 = calculate_th1(th2, right_position)
+            TH2_MAX = calculate_th2( TH1_MAX,left_position)
+            TH1_MIN = calculate_th1(TH2_MIN,right_position)
+            print"rotate_action_anticlock(th2)=", th2
 
 
-        if(th2>=TH2_MIN  and th2<=TH2_MAX and th1<=TH1_MAX and th1>=TH1_MIN):
-            return True
+            if(th2>=TH2_MIN  and th2<=TH2_MAX and th1<=TH1_MAX and th1>=TH1_MIN):
+                return True
+            else:
+                    print "range_limit_exceeding for rotate anticlockwise"
+                    return False
         else:
-                print "range_limit_exceeding for rotate anticlockwise"
-                return False
+            return False
 
 
 
@@ -245,6 +252,8 @@ class node:
         self.g = 0
         self.h = 0
         self.f = 0
+        self.theta=[0,0]
+
 
 
         if (a=="l_plus"):
@@ -267,12 +276,17 @@ class node:
             self.position_r = pose_r -OBJECT_SIZE
             self.position_l = pose_l +OBJECT_SIZE
             self.orientation= pose_o+90
-            (self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
+            self.theta[0] = theta_conversion(pose_l, pose_r, a)
+            self.theta[1] = calculate_th2(self.theta[0], pose_l)
+
+           # (self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
         elif(a=="rotate_anticlockwise"):
             self.position_r = pose_r + OBJECT_SIZE
             self.position_l = pose_l - OBJECT_SIZE
             self.orientation=pose_o-90
-            (self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
+            self.theta[1] = theta_conversion(pose_l, pose_r, a)
+            self.theta[0] = calculate_th1(self.theta[1], pose_r)
+            #(self.theta) = theta_conversion(self.position_l, self.position_r-0.1, "r_plus")
         else:
             self.position_r = pose_r
             self.position_l = pose_l
@@ -282,6 +296,7 @@ class node:
     def update(self,g,goal_l,goal_r,goal_orientation,parent):
         self.g = g + 10;
         global orientation_correction_done
+
 
         if(orientation_correction_done):
             if self.action=="l_plus" and (not(isclose(self.position_l, goal_l, rel_tol=1e-09, abs_tol=0.0))):
@@ -298,9 +313,9 @@ class node:
                  self.h=W_S*(1/(goal_r-self.position_r))
 
             if (self.action == parent):
-                 self.h = self.h - 1000;
-                 #print "h8"
-                 #self.h=0
+                 self.h = W_P*self.h ;
+
+
             if self.action=="rotate_clockwise":
                 self.h=R_S*(self.orientation-goal_orientation)
             if self.action=="rotate_anticlockwise":
@@ -357,7 +372,7 @@ class node:
                     self.h = 0;
 
             if (self.action == parent):
-                self.h = self.h - 1000;
+                self.h = W_P*self.h;
 
             if self.action=="rotate_clockwise":
                 self.h=R_S*(self.orientation-goal_orientation)
@@ -466,10 +481,10 @@ def A_star(start, goal):
             expanded=0
             continue
 
-        # print "action=",cur.action
-        # print "l=",(cur.position_l)
-        # print "r=",(cur.position_r)
-        # print "total_cost=",cur.f
+        print "action=",cur.action
+        print "l=",(cur.position_l)
+        print "r=",(cur.position_r)
+        print "total_cost=",cur.f
         exp= [cur.position_l,cur.position_r,cur.orientation]
         closed_list.append(exp)
         NUMBER_OF_NODES_EXPANDED=NUMBER_OF_NODES_EXPANDED+1
@@ -545,6 +560,20 @@ def backtrace(cur):
     print"Length of solution=",len(path)
     print path
 
+    F=open('data.txt','w')
+    for i in range(len(L_position)):
+        if(path[i]=='l_minus'):
+            a=0;
+        if (path[i] == 'r_minus'):
+            a = 1;
+        if (path[i] == 'l_plus'):
+            a = 2;
+        if (path[i] == 'r_plus'):
+            a = 3;
+        data=[L_position[i],R_position[i],a,theta[i][0],theta[i][1]]
+        F.write(str(data)+"\n")
+
+    F.close()
     plot(L_position,R_position,theta,path)
 
     return path
@@ -582,7 +611,7 @@ def plot(L,R,theta,A):
             A[i]="r_plus"
             count.append(i)
         elif(A[i]=="rotate_anticlockwise"):
-            R[i] = R[i] -0.1
+            R[i] = R[i]-0.1
             L[i] = L[i]
             A[i] = "r_plus"
             count.append(i)
@@ -594,44 +623,45 @@ def plot(L,R,theta,A):
         print "theta1=",theta[i][0],"theta2=",theta[i][1]
         print "x=",x,"y=",y
 
+    if(len(X)>0):
+        # plotting the points
+        plt.plot(X, Y)
+        for j in range(len(count)):
+            print "X=", [X[count[j] - 1], X[count[j]]], "Y=", [Y[count[j] - 1], Y[count[j]]]
+            plt.plot([X[count[j]-1],X[count[j]]],[Y[count[j]-1],Y[count[j]]],'r')
 
-    # plotting the points
-    plt.plot(X, Y)
-    for j in range(len(count)):
-        print "X=", [X[count[j] - 1], X[count[j]]], "Y=", [Y[count[j] - 1], Y[count[j]]]
-        plt.plot([X[count[j]-1],X[count[j]]],[Y[count[j]-1],Y[count[j]]],'r')
+        plt.plot(X[len(X)-1],Y[len(Y)-1],'g*')
 
-    plt.plot(X[len(X)-1],Y[len(Y)-1],'g*')
-    plt.plot(X[0],Y[0],'yo')
+        plt.plot(X[0],Y[0],'yo')
 
-    plt.xlim([-10, 10])
-    plt.ylim([0, 15])
+        plt.xlim([-10, 10])
+        plt.ylim([0, 15])
 
-    # naming the x axis
-    plt.xlabel('x - axis')
-    # naming the y axis
-    plt.ylabel('y - axis')
+        # naming the x axis
+        plt.xlabel('x - axis')
+        # naming the y axis
+        plt.ylabel('y - axis')
 
-    # giving a title to my graph
-    plt.title('Trajectory tracked by the block ')
+        # giving a title to my graph
+        plt.title('Trajectory tracked by the block ')
 
-    #Legend
-    # # legend_elements = [Line2D([0], [0], color='b', lw=1, label='Sliding Action'),
-    # #                    Line2D([0], [0], marker='o', color='w', label='Start',
-    # #                           markerfacecolor='y', markersize=10),
-    # #                    Line2D([0], [0], marker='*', color='w', label='Goal',
-    # #                           markerfacecolor='g', markersize=10),
-    #                   ]
+        #Legend
+        # # legend_elements = [Line2D([0], [0], color='b', lw=1, label='Sliding Action'),
+        # #                    Line2D([0], [0], marker='o', color='w', label='Start',
+        # #                           markerfacecolor='y', markersize=10),
+        # #                    Line2D([0], [0], marker='*', color='w', label='Goal',
+        # #                           markerfacecolor='g', markersize=10),
+        #                   ]
 
-    # legend_elements = [Line2D([0], [0], color='b', lw=4, label='Line'),
-    #                    Line2D([0], [0], marker='o', color='w', label='Scatter',
-    #                           markerfacecolor='g', markersize=15),
-    #                    ]
+        # legend_elements = [Line2D([0], [0], color='b', lw=4, label='Line'),
+        #                    Line2D([0], [0], marker='o', color='w', label='Scatter',
+        #                           markerfacecolor='g', markersize=15),
+        #                    ]
 
-    #plt.legend(handles=legend_elements)
+        #plt.legend(handles=legend_elements)
 
-    # function to show the plot
-    plt.show()
+        # function to show the plot
+        plt.show()
 
 
 
@@ -647,9 +677,9 @@ def high_level_plan(start, goal):
 # Main function to run standalone
 if __name__=="__main__":
 
-    start = node(0,10,7,0,None,None)
+    start = node(0,13,12,0,None,None)
 
-    goal = node(0,7,7,-90,None,None)
+    goal = node(0,2,4.5,180,None,None)
 
     high_level_plan(start, goal)
 
